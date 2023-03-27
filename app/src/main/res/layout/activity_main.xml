@@ -183,7 +183,6 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="20dp"
                     android:layout_marginTop="50dp"
-                    android:rotation="5"
                     android:text="FAST VPN"
                     android:textColor="#FFFFFFFF"
                     android:textSize="18sp"

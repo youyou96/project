@@ -2,6 +2,7 @@ package com.bird.yy.project.activity
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import androidx.appcompat.app.AlertDialog
@@ -25,7 +26,8 @@ class ServiceActivity : BaseActivity() {
     private var locationAdapter: LocationAdapter? = null
     private val layoutManager by lazy { LinearLayoutManager(this, RecyclerView.VERTICAL, false) }
     private var isConnection = false
-    private var arrBack:ImageView? = null
+    private var arrBack: ImageView? = null
+
     @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,6 +53,7 @@ class ServiceActivity : BaseActivity() {
                             .setMessage("If you want to connect to another VPN, you need to disconnect the current connection first. Do you want to disconnect the current connection?")
                             .setPositiveButton("yes") { p0, p1 ->
                                 EventBus.getDefault().post(country)
+                                saveConnectingCountryBean(country)
                                 finish()
                             }
                             .setNegativeButton("no", null)
@@ -58,12 +61,38 @@ class ServiceActivity : BaseActivity() {
                         alertDialog.show()
                     } else {
                         EventBus.getDefault().post(country)
+                        saveConnectingCountryBean(country)
                         finish()
                     }
-
                 }
             }
         })
+    }
+
+    private fun saveConnectingCountryBean(event: Country) {
+        val countryJson: String? = SPUtils.get().getString(Constant.service, "")
+        if (countryJson != null) {
+            if (countryJson.isNotEmpty()) {
+                val type: Type = object : TypeToken<List<CountryBean?>?>() {}.type
+                val countryBean: MutableList<CountryBean> =
+                    Gson().fromJson(countryJson.toString(), type)
+                if (countryBean.isNotEmpty()) {
+                    if (event?.name?.contains("Fast Smart") == true) {
+                        val countryData: CountryBean = CountryBean()
+                        countryData.country = event?.name!!
+                        SPUtils.get()
+                            .putString(Constant.connectingCountryBean, Gson().toJson(countryData))
+                    } else {
+                        countryBean.forEach {
+                            if (event?.name?.equals(it.country) == true) {
+                                SPUtils.get()
+                                    .putString(Constant.connectingCountryBean, Gson().toJson(it))
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     @SuppressLint("NotifyDataSetChanged")

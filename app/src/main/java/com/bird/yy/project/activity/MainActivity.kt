@@ -73,7 +73,9 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
         }
         binding.mainCardCountry.setOnClickListener {
             //choose service
-            jumpActivity(ServiceActivity::class.java)
+            val intent = Intent(this, ServiceActivity::class.java)
+            intent.putExtra("isConnection", state.canStop)
+            startActivity(intent)
         }
         binding.animationView.setOnClickListener {
             connect()
@@ -146,7 +148,7 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
 
     private fun initView() {
         if (!SPUtils.get().getBoolean(Constant.isConnectStatus, false)) {
-            val customizedDialog = CustomizedDialog(this, "images/main_lead.json", false)
+            val customizedDialog = CustomizedDialog(this, "images/main_lead.json", false, true)
             if (!customizedDialog.isShowing) {
                 binding.mainSrcBackground.visibility = View.INVISIBLE
                 customizedDialog.show()
@@ -172,7 +174,6 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
 
         } else {
             isHasNet()
-
         }
     }
 
@@ -215,7 +216,7 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
                 countryBean = Gson().fromJson(countryBeanJson, CountryBean::class.java)
             }
         }
-        if (countryBean == null) {
+        if (countryBean == null || countryBean?.country?.contains("Super Fast") == true) {
             runBlocking {
                 val smartList = getFastSmart()
                 if (smartList.isNotEmpty()) {
@@ -366,7 +367,9 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
                 binding.theConnectionTimeTv.text = "00:00:00"
                 binding.theConnectionTimeTv.setTextColor(getColor(R.color.main_connect_time))
                 SPUtils.get().putLong(Constant.connectTime, 0L)
-                if (SPUtils.get().getBoolean(Constant.isShowResultKey, false)) {
+                if (SPUtils.get()
+                        .getBoolean(Constant.isShowResultKey, false) && text != "00:00:00"
+                ) {
                     SPUtils.get().putBoolean(Constant.isConnectStatus, false)
                     var country: Country? = null
                     if (countryBean != null) {
@@ -408,7 +411,8 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
         }
         SPUtils.get().putBoolean(Constant.isShowResultKey, true)
         val isCancel = state.canStop
-        val customizedDialog = CustomizedDialog(this@MainActivity, "images/data.json", isCancel)
+        val customizedDialog =
+            CustomizedDialog(this@MainActivity, "images/data.json", isCancel, isCancel)
         connectionJob = lifecycleScope.launch {
             flow {
                 (0 until 3).forEach {
@@ -442,23 +446,7 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onMessageEvent(event: Country?) {
-        val countryJson: String? = SPUtils.get().getString(Constant.service, "")
-        if (countryJson != null) {
-            if (countryJson.isNotEmpty()) {
-                val type: Type = object : TypeToken<List<CountryBean?>?>() {}.type
-                val countryBean: MutableList<CountryBean> =
-                    Gson().fromJson(countryJson.toString(), type)
-                if (countryBean.isNotEmpty()) {
-                    countryBean.forEach {
-                        if (event?.name?.equals(it.country) == true) {
-                            SPUtils.get()
-                                .putString(Constant.connectingCountryBean, Gson().toJson(it))
-                        }
-                    }
-                }
-            }
-        }
-        showConnect()
+        connect()
     }
 
     override fun onDestroy() {

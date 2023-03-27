@@ -64,7 +64,7 @@ open class InterNetUtil {
     }
 
     fun getIpByServer(context: Context) {
-        OkGo.get<String>("https://api.myip.com")
+        OkGo.get<String>("https://ip.seeip.org/geoip/")
             .tag(context)
             .execute(object : StringCallback() {
                 override fun onSuccess(response: Response<String>?) {

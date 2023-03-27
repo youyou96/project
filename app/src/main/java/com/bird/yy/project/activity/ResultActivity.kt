@@ -6,6 +6,7 @@ import android.os.SystemClock
 import android.view.View
 import android.widget.Chronometer
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import com.bird.yy.project.R
 import com.bird.yy.project.base.BaseActivity
@@ -23,8 +24,9 @@ class ResultActivity : BaseActivity() {
     private var back: ImageView? = null
     private var isStop: Boolean = false
     private var statusTv: TextView? = null
-    private var countryTV:TextView? = null
+    private var countryTV: TextView? = null
     private var text = ""
+    private var resultBackGround: LinearLayout? = null
 
     @SuppressLint("ResourceAsColor", "SetTextI18n", "MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,6 +37,7 @@ class ResultActivity : BaseActivity() {
         back = findViewById(R.id.id_back)
         statusTv = findViewById(R.id.connection_status)
         countryTV = findViewById(R.id.country_tv)
+        resultBackGround = findViewById(R.id.result_background)
         back?.setOnClickListener {
             finish()
         }
@@ -47,7 +50,7 @@ class ResultActivity : BaseActivity() {
             val countryBean = Gson().fromJson(countryJson, CountryBean::class.java)
             if (countryBean != null) {
                 val country = EntityUtils().countryBeanToCountry(countryBean)
-                countryTV?.text =country.name
+                countryTV?.text = country.name
                 if (country.src == 0) {
                     img?.visibility = View.INVISIBLE
                 } else {
@@ -60,10 +63,13 @@ class ResultActivity : BaseActivity() {
             tv?.start()
             tv?.setTextColor(resources.getColor(R.color.connection))
             statusTv?.text = "Connected!"
+            resultBackGround?.setBackgroundResource(R.drawable.result_connected)
         } else {
             tv?.text = text
             tv?.setTextColor(resources.getColor(R.color.disconnected))
             statusTv?.text = "Disconnected!"
+            resultBackGround?.setBackgroundResource(R.drawable.result_disconnected)
+
         }
         tv?.setOnChronometerTickListener {
             val time = SystemClock.elapsedRealtime() - it.base

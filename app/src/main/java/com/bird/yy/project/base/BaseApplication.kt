@@ -14,6 +14,7 @@ import androidx.multidex.MultiDexApplication
 import com.bird.yy.project.activity.FlashActivity
 import com.bird.yy.project.activity.MainActivity
 import com.bird.yy.project.manager.ActivityManager
+import com.bird.yy.project.utils.Constant
 import com.bird.yy.project.utils.SPUtils
 import com.github.shadowsocks.Core
 import com.lzy.okgo.OkGo
@@ -42,12 +43,13 @@ class BaseApplication : MultiDexApplication(), Application.ActivityLifecycleCall
     override fun onCreate() {
         super.onCreate()
         Core.init(this, MainActivity::class)
+        Constant.isShowLead = true
         if (applicationContext.packageName.equals(getCurrentProcessName())) {
             initOkGo()
             registerActivityLifecycleCallbacks(this)
             SPUtils.get().init(this)
+            SPUtils.get().putString(Constant.iR, "")
             // Log the Mobile Ads SDK version.
-
             ProcessLifecycleOwner.get().lifecycle.addObserver(this)
         }
     }
@@ -145,5 +147,6 @@ class BaseApplication : MultiDexApplication(), Application.ActivityLifecycleCall
     override fun onActivityDestroyed(activity: Activity) {
         getActivityManager().removeActivity(activity)
     }
+
 
 }

@@ -44,7 +44,6 @@ class ServiceActivity : BaseActivity() {
         setList()
         locationAdapter?.setOnItemClickListener(object : LocationAdapter.OnItemClickListener {
             override fun onItemClick(view: View?, country: Country) {
-                SPUtils.get().putString(Constant.chooseCountry, Gson().toJson(country))
                 if (country.isChoose == true) {
                     finish()
                 } else {
@@ -77,8 +76,8 @@ class ServiceActivity : BaseActivity() {
                 val countryBean: MutableList<CountryBean> =
                     Gson().fromJson(countryJson.toString(), type)
                 if (countryBean.isNotEmpty()) {
-                    if (event?.name?.contains("Fast Smart") == true) {
-                        val countryData: CountryBean = CountryBean()
+                    if (event?.name?.contains("Super Smart") == true) {
+                        val countryData = CountryBean()
                         countryData.country = event?.name!!
                         SPUtils.get()
                             .putString(Constant.connectingCountryBean, Gson().toJson(countryData))
@@ -99,7 +98,7 @@ class ServiceActivity : BaseActivity() {
     private fun setList() {
         val countryJson: String? = SPUtils.get().getString(Constant.service, "")
         val countryList: MutableList<Country> = ArrayList()
-        countryList.add(Country(0, "Fast Smart Server"))
+        countryList.add(Country(0, "Super Smart Server"))
         if (countryJson != null) {
             if (countryJson.isNotEmpty()) {
                 val type: Type = object : TypeToken<List<CountryBean?>?>() {}.type

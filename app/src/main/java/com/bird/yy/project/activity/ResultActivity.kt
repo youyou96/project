@@ -3,6 +3,7 @@ package com.bird.yy.project.activity
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.os.SystemClock
+import android.util.Log
 import android.view.View
 import android.widget.Chronometer
 import android.widget.ImageView
@@ -69,7 +70,8 @@ class ResultActivity : BaseActivity() {
             tv?.setTextColor(resources.getColor(R.color.disconnected))
             statusTv?.text = "Disconnected!"
             resultBackGround?.setBackgroundResource(R.drawable.result_disconnected)
-
+            SPUtils.get()
+                .putString(Constant.connectedCountryBean, "")
         }
         tv?.setOnChronometerTickListener {
             val time = SystemClock.elapsedRealtime() - it.base

@@ -1,7 +1,6 @@
 package com.bird.yy.project.activity
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Intent
 import android.content.pm.ResolveInfo
 import android.net.Uri
@@ -51,7 +50,6 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
     private lateinit var binding: ActivityMainBinding
     private lateinit var mainViewModel: MainViewModel
     private var state = BaseService.State.Idle
-    private var text = "00:00"
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
@@ -62,10 +60,6 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
         EventBus.getDefault().register(this)
     }
 
-    override fun onRestart() {
-        super.onRestart()
-        refreshUi()
-    }
 
     private fun onCLickListener() {
         binding.mainSetting.setOnClickListener {
@@ -77,7 +71,7 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
             intent.putExtra("isConnection", state.canStop)
             startActivity(intent)
         }
-        binding.animationView.setOnClickListener {
+        binding.mainSrcBackground.setOnClickListener {
             connect()
         }
         binding.contactUsLl.setOnClickListener {
@@ -147,8 +141,9 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
     }
 
     private fun initView() {
-        if (!SPUtils.get().getBoolean(Constant.isConnectStatus, false)) {
+        if (Constant.isShowLead) {
             val customizedDialog = CustomizedDialog(this, "images/main_lead.json", false, true)
+            Constant.isShowLead = false
             if (!customizedDialog.isShowing) {
                 binding.mainSrcBackground.visibility = View.INVISIBLE
                 customizedDialog.show()
@@ -156,13 +151,24 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
             customizedDialog.setOnClick {
                 customizedDialog.dismiss()
                 binding.mainSrcBackground.visibility = View.VISIBLE
-                connect()
+                if (!state.canStop) {
+                    connect()
+                }
 
             }
             customizedDialog.setOnCancelListener {
                 binding.mainSrcBackground.visibility = View.VISIBLE
             }
         }
+        val countryString = SPUtils.get().getString(Constant.chooseCountry, "")
+        if (countryString != null && countryString.isNotEmpty()) {
+            val country = Gson().fromJson(countryString, Country::class.java)
+            if (country != null) {
+                country.src?.let { it1 -> binding.mainCountryLogo.setBackgroundResource(it1) }
+                binding.mainCountryName.text = country?.name + "-" + country?.city
+            }
+        }
+
     }
 
     private fun connect() {
@@ -179,9 +185,23 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
 
     @SuppressLint("SetTextI18n")
     private fun refreshUi() {
-        val countryBeanJson = if (state.canStop) SPUtils.get()
-            .getString(Constant.connectedCountryBean, "") else SPUtils.get()
-            .getString(Constant.connectingCountryBean, "")
+        var countryBeanJson = ""
+        if (state.canStop) {
+            if (SPUtils.get()
+                    .getString(Constant.connectedCountryBean, "")?.isNotEmpty() == true
+            ) {
+                countryBeanJson = SPUtils.get()
+                    .getString(Constant.connectedCountryBean, "").toString()
+                Log.e("mainServiceChoose", "connected")
+            }
+        }
+        if (countryBeanJson?.isEmpty() == true) {
+            countryBeanJson = SPUtils.get()
+                .getString(Constant.connectingCountryBean, "").toString()
+            Log.e("mainServiceChoose", "connecting")
+
+        }
+
         if (countryBeanJson != null) {
             val countryBean = Gson().fromJson(countryBeanJson, CountryBean::class.java)
             if (countryBean != null) {
@@ -207,13 +227,19 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
         if (it) Toast.makeText(this, "Missing permissions", Toast.LENGTH_SHORT)
             .show() else showConnect()
     }
-    private var countryBean: CountryBean? = null
+
+        private var countryBean: CountryBean? = null
     private fun connectAnnotation() {
         ProfileManager.clear()
-        val countryBeanJson = SPUtils.get().getString(Constant.connectingCountryBean, "")
+//        var countryBean: CountryBean? = null
+        val countryBeanJson = if (state.canStop) SPUtils.get()
+            .getString(Constant.connectedCountryBean, "") else SPUtils.get()
+            .getString(Constant.connectingCountryBean, "")
+        Log.d("xxxxxx", countryBeanJson.toString() + state.canStop)
         if (countryBeanJson != null) {
             if (countryBeanJson.isNotEmpty()) {
                 countryBean = Gson().fromJson(countryBeanJson, CountryBean::class.java)
+                Log.d("xxxxxx11111", countryBean.toString())
             }
         }
         if (countryBean == null || countryBean?.country?.contains("Super Fast") == true) {
@@ -234,6 +260,7 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
                     Core.switchProfile(profileNew.id)
                     SPUtils.get()
                         .putString(Constant.connectingCountryBean, Gson().toJson(countryBean))
+                    Log.d("xxxxxx33333", countryBean.toString())
                 }
             }
         } else {
@@ -242,6 +269,7 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
             val profileNew = profile?.let { ProfileManager.createProfile(it) }
             profileNew?.id?.let { Core.switchProfile(it) }
             SPUtils.get().putString(Constant.connectingCountryBean, Gson().toJson(countryBean))
+            Log.d("xxxxxx2222", countryBean.toString())
         }
     }
 
@@ -320,7 +348,15 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
             }
             BaseService.State.Connected -> {
                 SPUtils.get().putBoolean(Constant.isConnectStatus, true)
-                SPUtils.get().putString(Constant.connectedCountryBean, Gson().toJson(countryBean))
+                if (countryBean != null) {
+                    SPUtils.get()
+                        .putString(Constant.connectedCountryBean, Gson().toJson(countryBean))
+                    Log.d("xxxxxx", "00000" + countryBean.toString())
+                    SPUtils.get().putString(
+                        Constant.chooseCountry,
+                        Gson().toJson(EntityUtils().countryBeanToCountry(countryBean!!))
+                    )
+                }
                 binding.animationView.setBackgroundResource(R.mipmap.main_connected)
                 binding.mainStatusImg.setBackgroundResource(R.mipmap.main_status_connected_background)
                 binding.mainStatusImg2.setBackgroundResource(R.mipmap.main_status_connected)
@@ -341,7 +377,6 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
                 if (SystemClock.elapsedRealtime() - (binding.theConnectionTimeTv.base) < 20 && SPUtils.get()
                         .getBoolean(Constant.isShowResultKey, false)
                 ) {
-                    SPUtils.get().putBoolean(Constant.isShowResultKey, false)
                     lifecycleScope.launch(Dispatchers.Main.immediate) {
                         delay(300L)
                         if (lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
@@ -354,6 +389,8 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
                             intent.putExtra("base", binding.theConnectionTimeTv.base)
                             intent.putExtra("srcInt", srcInt)
                             startActivity(intent)
+                            SPUtils.get().putBoolean(Constant.isShowResultKey, false)
+                            refreshUi()
                         }
                     }
                 }
@@ -368,7 +405,7 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
                 binding.theConnectionTimeTv.setTextColor(getColor(R.color.main_connect_time))
                 SPUtils.get().putLong(Constant.connectTime, 0L)
                 if (SPUtils.get()
-                        .getBoolean(Constant.isShowResultKey, false) && text != "00:00:00"
+                        .getBoolean(Constant.isShowResultKey, false) && Constant.text != "00:00:00"
                 ) {
                     SPUtils.get().putBoolean(Constant.isConnectStatus, false)
                     var country: Country? = null
@@ -376,15 +413,16 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
                         country = EntityUtils().countryBeanToCountry(countryBean!!)
                     }
                     val srcInt = if (country != null) country!!.src else R.mipmap.fast
-                    SPUtils.get().putBoolean(Constant.isShowResultKey, false)
                     lifecycleScope.launch(Dispatchers.Main.immediate) {
                         delay(300L)
                         if (lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
                             val intent = Intent(this@MainActivity, ResultActivity::class.java)
-                            intent.putExtra("text", text)
+                            intent.putExtra("text", Constant.text)
                             intent.putExtra("isStop", true)
                             intent.putExtra("srcInt", srcInt)
                             startActivity(intent)
+                            SPUtils.get().putBoolean(Constant.isShowResultKey, false)
+                            refreshUi()
                         }
                     }
 
@@ -407,10 +445,11 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
     private var connectionJob: Job? = null
     private fun showConnect() {
         if (state.canStop) {
-            text = binding.theConnectionTimeTv.text as String
+            Constant.text = binding.theConnectionTimeTv.text as String
         }
         SPUtils.get().putBoolean(Constant.isShowResultKey, true)
         val isCancel = state.canStop
+        var isFinish = false
         val customizedDialog =
             CustomizedDialog(this@MainActivity, "images/data.json", isCancel, isCancel)
         connectionJob = lifecycleScope.launch {
@@ -421,20 +460,25 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
                 }
             }.onStart {
                 //start
+                Log.d("xxxxxx", "1111")
                 customizedDialog.show()
                 connectAnnotation()
             }.onCompletion {
                 //finish
+                Log.d("xxxxxx", "0000")
                 customizedDialog.dismiss()
-                if (state.canStop) {
-                    Core.stopService()
-                } else {
-                    Core.startService()
+                if (!isFinish) {
+                    if (state.canStop) {
+                        Core.stopService()
+                    } else {
+                        Core.startService()
+                    }
                 }
-                mainViewModel.country.postValue(countryBean)
             }.collect {
                 //process
+                Log.d("xxxxxx", "3333")
                 if (!customizedDialog.isShowing) {
+                    isFinish = true
                     connectionJob?.cancel()
                     return@collect
                 }
@@ -453,8 +497,7 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
         super.onDestroy()
         SPUtils.get().putLong(Constant.connectTime, binding.theConnectionTimeTv.base)
         SPUtils.get().putBoolean(Constant.isShowResultKey, false)
-        SPUtils.get().putString(Constant.connectedCountryBean, "")
-        SPUtils.get().putString(Constant.connectingCountryBean, "")
         EventBus.getDefault().unregister(this)
+        countryBean = null
     }
 }

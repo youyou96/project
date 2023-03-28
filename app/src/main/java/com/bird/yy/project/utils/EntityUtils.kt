@@ -12,7 +12,6 @@ class EntityUtils {
     fun countryToProfile(country: Country): Profile {
         val profile = Profile()
         profile.name = country.name
-        profile.id = country.id.toLong()
         profile.host = country.host
         profile.method = country.account
         profile.password = country.password

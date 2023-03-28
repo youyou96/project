@@ -14,5 +14,7 @@ class Constant {
         const val connectTime = "connectTime"
         const val isShowResultKey = "isShowResultKey"
         const val shareUrl = "https://play.google.com/store/apps/details?id="
+        var isShowLead  = true
+        var text = "00:00:00"
     }
 }

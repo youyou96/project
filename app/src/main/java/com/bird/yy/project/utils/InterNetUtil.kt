@@ -3,6 +3,7 @@ package com.bird.yy.project.utils
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
+import android.util.Log
 import com.bird.yy.project.entity.IpEntity
 import com.google.gson.Gson
 import com.lzy.okgo.OkGo

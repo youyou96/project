@@ -9,7 +9,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 
 import com.airbnb.lottie.LottieAnimationView;
-import com.bird.yy.project.R;
+import com.unlimited.stable.earth.R;
 
 public class CustomizedDialog extends Dialog {
     private String filePath;

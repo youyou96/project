@@ -8,7 +8,6 @@ import android.widget.ImageView
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.bird.yy.project.R
 import com.bird.yy.project.adapter.LocationAdapter
 import com.bird.yy.project.base.BaseActivity
 import com.bird.yy.project.entity.Country
@@ -18,6 +17,7 @@ import com.bird.yy.project.utils.EntityUtils
 import com.bird.yy.project.utils.SPUtils
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.unlimited.stable.earth.R
 import org.greenrobot.eventbus.EventBus
 import java.lang.reflect.Type
 

@@ -9,13 +9,13 @@ import android.widget.Chronometer
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import com.bird.yy.project.R
 import com.bird.yy.project.base.BaseActivity
 import com.bird.yy.project.entity.CountryBean
 import com.bird.yy.project.utils.Constant
 import com.bird.yy.project.utils.EntityUtils
 import com.bird.yy.project.utils.SPUtils
 import com.google.gson.Gson
+import com.unlimited.stable.earth.R
 import java.text.SimpleDateFormat
 import java.util.*
 

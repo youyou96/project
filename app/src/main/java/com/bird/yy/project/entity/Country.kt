@@ -1,6 +1,6 @@
 package com.bird.yy.project.entity
 
-import com.bird.yy.project.R
+import com.unlimited.stable.earth.R
 
 
 data class Country(

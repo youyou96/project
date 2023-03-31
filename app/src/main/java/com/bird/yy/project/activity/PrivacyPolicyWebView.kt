@@ -7,9 +7,9 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.ImageView
 import android.widget.TextView
-import com.bird.yy.project.R
 import com.bird.yy.project.base.BaseActivity
 import com.bird.yy.project.utils.Constant
+import com.unlimited.stable.earth.R
 
 class PrivacyPolicyWebView : BaseActivity() {
     private var webView: WebView? = null

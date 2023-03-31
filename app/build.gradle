@@ -1,18 +1,19 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+
 }
 
 android {
-    namespace 'com.bird.yy.project'
+    namespace 'com.unlimited.stable.earth'
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.bird.yy.project"
+        applicationId "com.unlimited.stable.earth"
         minSdk 24
         targetSdk 33
         versionCode 1
-        versionName "1.0"
+        versionName "1.0.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -72,4 +73,10 @@ dependencies {
     implementation 'com.lzy.net:okgo:3.0.4'
 
     implementation 'org.greenrobot:eventbus:3.0.0'
+
+    implementation platform('com.google.firebase:firebase-bom:29.3.1')
+    implementation 'com.google.firebase:firebase-analytics-ktx'
+    implementation 'com.google.firebase:firebase-crashlytics-ktx'
+    implementation 'com.facebook.android:facebook-android-sdk:12.3.0'
+    implementation 'com.google.firebase:firebase-config-ktx'
 }

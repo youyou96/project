@@ -6,7 +6,7 @@ class ActivityManager {
     /**
      * 保存所有创建的Activity
      */
-    private val activityList: MutableList<Activity> = ArrayList()
+     val activityList: MutableList<Activity> = ArrayList()
 
 
     companion object {

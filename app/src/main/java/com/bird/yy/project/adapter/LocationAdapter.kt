@@ -7,9 +7,9 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.bird.yy.project.R
 import com.bird.yy.project.entity.Country
 import com.google.android.material.card.MaterialCardView
+import com.unlimited.stable.earth.R
 
 class LocationAdapter :
     RecyclerView.Adapter<LocationAdapter.LocationViewHolder>() {

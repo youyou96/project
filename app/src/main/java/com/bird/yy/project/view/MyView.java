@@ -11,8 +11,8 @@ import android.view.WindowManager;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 
-import com.bird.yy.project.R;
 import com.nineoldandroids.view.ViewHelper;
+import com.unlimited.stable.earth.R;
 
 
 public class MyView extends HorizontalScrollView {

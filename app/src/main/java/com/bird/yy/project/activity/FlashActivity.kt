@@ -5,14 +5,14 @@ import android.os.CountDownTimer
 import android.util.Log
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
-import com.bird.yy.project.R
 import com.bird.yy.project.base.BaseActivity
-import com.bird.yy.project.databinding.ActivityFlashBinding
 import com.bird.yy.project.utils.Constant
 import com.bird.yy.project.utils.EntityUtils
 import com.bird.yy.project.utils.InterNetUtil
 import com.bird.yy.project.utils.SPUtils
 import com.bird.yy.project.viewmodel.FlashViewModel
+import com.unlimited.stable.earth.R
+import com.unlimited.stable.earth.databinding.ActivityFlashBinding
 
 private const val COUNTER_TIME = 3L
 

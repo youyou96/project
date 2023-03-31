@@ -1,10 +1,10 @@
 package com.bird.yy.project.utils
 
 import android.content.Context
-import com.bird.yy.project.R
 import com.bird.yy.project.entity.Country
 import com.bird.yy.project.entity.CountryBean
 import com.github.shadowsocks.database.Profile
+import com.unlimited.stable.earth.R
 import java.io.BufferedReader
 import java.io.InputStreamReader
 

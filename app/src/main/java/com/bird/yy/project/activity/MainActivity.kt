@@ -15,9 +15,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceDataStore
-import com.bird.yy.project.R
 import com.bird.yy.project.base.BaseActivity
-import com.bird.yy.project.databinding.ActivityMainBinding
 import com.bird.yy.project.entity.Country
 import com.bird.yy.project.entity.CountryBean
 import com.bird.yy.project.entity.SmartBean
@@ -33,6 +31,8 @@ import com.github.shadowsocks.utils.Key
 import com.github.shadowsocks.utils.StartService
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.unlimited.stable.earth.R
+import com.unlimited.stable.earth.databinding.ActivityMainBinding
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onCompletion
@@ -102,10 +102,14 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
     }
 
     private fun rateNow() {
-        val intent = Intent(Intent.ACTION_VIEW)
-        intent.data = Uri.parse("https://play.google.com/store/apps/details?id=$packageName")
-        intent.setPackage("com.android.vending")
-        startActivity(intent)
+        try {
+            val intent = Intent(Intent.ACTION_VIEW)
+            intent.data = Uri.parse("https://play.google.com/store/apps/details?id=$packageName")
+            intent.setPackage("com.android.vending")
+            startActivity(intent)
+        }catch (e:Exception){
+            Toast.makeText(this,"Please install Google Store",Toast.LENGTH_LONG).show()
+        }
     }
 
 
@@ -351,7 +355,6 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
                 if (countryBean != null) {
                     SPUtils.get()
                         .putString(Constant.connectedCountryBean, Gson().toJson(countryBean))
-                    Log.d("xxxxxx", "00000" + countryBean.toString())
                     SPUtils.get().putString(
                         Constant.chooseCountry,
                         Gson().toJson(EntityUtils().countryBeanToCountry(countryBean!!))
@@ -460,12 +463,10 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
                 }
             }.onStart {
                 //start
-                Log.d("xxxxxx", "1111")
                 customizedDialog.show()
                 connectAnnotation()
             }.onCompletion {
                 //finish
-                Log.d("xxxxxx", "0000")
                 customizedDialog.dismiss()
                 if (!isFinish) {
                     if (state.canStop) {
@@ -476,7 +477,6 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
                 }
             }.collect {
                 //process
-                Log.d("xxxxxx", "3333")
                 if (!customizedDialog.isShowing) {
                     isFinish = true
                     connectionJob?.cancel()

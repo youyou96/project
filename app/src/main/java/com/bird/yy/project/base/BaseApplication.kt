@@ -17,6 +17,8 @@ import com.bird.yy.project.manager.ActivityManager
 import com.bird.yy.project.utils.Constant
 import com.bird.yy.project.utils.SPUtils
 import com.github.shadowsocks.Core
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.ktx.initialize
 import com.lzy.okgo.OkGo
 import com.lzy.okgo.cache.CacheEntity
 import com.lzy.okgo.cache.CacheMode
@@ -47,6 +49,7 @@ class BaseApplication : MultiDexApplication(), Application.ActivityLifecycleCall
         if (applicationContext.packageName.equals(getCurrentProcessName())) {
             initOkGo()
             registerActivityLifecycleCallbacks(this)
+            Firebase.initialize(this)
             SPUtils.get().init(this)
             SPUtils.get().putString(Constant.iR, "")
             // Log the Mobile Ads SDK version.

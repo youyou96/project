@@ -6,7 +6,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.navigation.fragment.findNavController
-import com.bird.yy.project.databinding.FragmentFirstBinding
+import com.unlimited.stable.earth.R
+import com.unlimited.stable.earth.databinding.FragmentFirstBinding
 
 /**
  * A simple [Fragment] subclass as the default destination in the navigation.

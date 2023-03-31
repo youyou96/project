@@ -6,6 +6,8 @@ import android.util.Log
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import com.bird.yy.project.base.BaseActivity
+import com.bird.yy.project.entity.AdBean
+import com.bird.yy.project.manager.AdManage
 import com.bird.yy.project.utils.Constant
 import com.bird.yy.project.utils.EntityUtils
 import com.bird.yy.project.utils.InterNetUtil
@@ -14,7 +16,7 @@ import com.bird.yy.project.viewmodel.FlashViewModel
 import com.unlimited.stable.earth.R
 import com.unlimited.stable.earth.databinding.ActivityFlashBinding
 
-private const val COUNTER_TIME = 3L
+private const val COUNTER_TIME = 10L
 
 class FlashActivity : BaseActivity() {
     private var timer: CountDownTimer? = null
@@ -30,6 +32,7 @@ class FlashActivity : BaseActivity() {
         }
         InterNetUtil().getIpByServer(this)
         setData()
+        loadAd()
     }
 
     private fun countDownTimer() {
@@ -37,6 +40,9 @@ class FlashActivity : BaseActivity() {
             override fun onTick(p0: Long) {
                 val process = 100 - (p0 * 100 / COUNTER_TIME / 1000)
                 flashViewModel.progress.postValue(process.toInt())
+                if (process >= 20) {
+                    showAd()
+                }
             }
 
             override fun onFinish() {
@@ -71,5 +77,57 @@ class FlashActivity : BaseActivity() {
             SPUtils.get().putString(Constant.service, serviceJson.toString())
             Log.e("serviceJson",serviceJson.toString())
         }
+    }
+    private fun showAd() {
+        val adBean = Constant.AdMap[Constant.adOpen]
+        val adManage = AdManage()
+
+        if (adBean?.ad != null) {
+            timer?.cancel()
+            adManage.showAd(
+                this@FlashActivity,
+                Constant.adOpen,
+                adBean,
+                null,
+                object : AdManage.OnShowAdCompleteListener {
+                    override fun onShowAdComplete() {
+                        jumpActivityFinish(MainActivity::class.java)
+                    }
+
+                    override fun isMax() {
+                        jumpActivityFinish(MainActivity::class.java)
+                    }
+
+                })
+        } else {
+            adManage.loadAd(Constant.adOpen, this,object :AdManage.OnLoadAdCompleteListener{
+                override fun onLoadAdComplete(ad: AdBean?) {
+                }
+
+                override fun isMax() {
+                    jumpActivityFinish(MainActivity::class.java)
+                }
+
+            })
+        }
+    }
+
+    private fun loadAd() {
+        var adBean = Constant.AdMap[Constant.adOpen]
+        val adManage = AdManage()
+        if (adBean?.ad == null) {
+            adManage.loadAd(Constant.adOpen,this, object : AdManage.OnLoadAdCompleteListener {
+                override fun onLoadAdComplete(ad: AdBean?) {
+                }
+
+                override fun isMax() {
+                }
+
+            })
+        }
+
+    }
+
+    override fun onBackPressed() {
     }
 }

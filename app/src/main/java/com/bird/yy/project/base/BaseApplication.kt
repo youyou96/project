@@ -3,6 +3,7 @@ package com.bird.yy.project.base
 import android.app.Activity
 import android.app.Application
 import android.content.Context
+import android.content.Entity
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Build
@@ -14,9 +15,13 @@ import androidx.multidex.MultiDexApplication
 import com.bird.yy.project.activity.FlashActivity
 import com.bird.yy.project.activity.MainActivity
 import com.bird.yy.project.manager.ActivityManager
+import com.bird.yy.project.manager.AdManage
 import com.bird.yy.project.utils.Constant
+import com.bird.yy.project.utils.EntityUtils
 import com.bird.yy.project.utils.SPUtils
 import com.github.shadowsocks.Core
+import com.google.android.gms.ads.AdActivity
+import com.google.android.gms.ads.MobileAds
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.ktx.initialize
 import com.lzy.okgo.OkGo
@@ -50,8 +55,14 @@ class BaseApplication : MultiDexApplication(), Application.ActivityLifecycleCall
             initOkGo()
             registerActivityLifecycleCallbacks(this)
             Firebase.initialize(this)
+            MobileAds.initialize(this)
             SPUtils.get().init(this)
             SPUtils.get().putString(Constant.iR, "")
+            Constant.AdMap[Constant.adNative_h]?.ad = null
+            Constant.AdMap[Constant.adNative_r]?.ad = null
+            Constant.AdMap[Constant.adInterstitial_h]?.ad = null
+            Constant.AdMap[Constant.adInterstitial_r]?.ad = null
+            loadingData()
             // Log the Mobile Ads SDK version.
             ProcessLifecycleOwner.get().lifecycle.addObserver(this)
         }
@@ -61,7 +72,27 @@ class BaseApplication : MultiDexApplication(), Application.ActivityLifecycleCall
         super.onConfigurationChanged(newConfig)
         Core.updateNotificationChannels()
     }
+    private fun loadingData() {
+        EntityUtils().getServiceData(this)
+        //load ad
+        val adBeanNativeH = Constant.AdMap[Constant.adNative_h]
+        if (adBeanNativeH?.ad == null) {
+            AdManage().loadAd(Constant.adNative_h, this)
+        }
+        val adBeanNativeR = Constant.AdMap[Constant.adNative_r]
+        if (adBeanNativeR?.ad == null) {
+            AdManage().loadAd(Constant.adNative_r, this)
+        }
+        val adBeanInterH = Constant.AdMap[Constant.adInterstitial_h]
+        if (adBeanInterH?.ad == null) {
+            AdManage().loadAd(Constant.adInterstitial_h, this)
+        }
+        val adBeanInterR = Constant.AdMap[Constant.adInterstitial_r]
+        if (adBeanInterR?.ad == null) {
+            AdManage().loadAd(Constant.adInterstitial_r, this)
+        }
 
+    }
     private fun getCurrentProcessName(): String {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             return Application.getProcessName()
@@ -118,9 +149,12 @@ class BaseApplication : MultiDexApplication(), Application.ActivityLifecycleCall
         if (foregroundActivities == 1 && !isChangingConfiguration) {
             job?.cancel()
             job = null
-            if (bgFlag) {
+            if (bgFlag && activity !is AdActivity) {
                 bgFlag = false
                 activity.startActivity(Intent(activity, FlashActivity::class.java))
+                getActivityManager().activityList.filterIsInstance<MainActivity>()
+                    .forEach { it.finish() }
+                loadingData()
             }
         }
 
@@ -139,6 +173,8 @@ class BaseApplication : MultiDexApplication(), Application.ActivityLifecycleCall
             job = GlobalScope.launch(Dispatchers.Main.immediate) {
                 delay(3000L)
                 bgFlag = true
+                getActivityManager().activityList.filterIsInstance<AdActivity>()
+                    .forEach { it.finish() }
             }
         }
         isChangingConfiguration = activity.isChangingConfigurations
@@ -150,6 +186,4 @@ class BaseApplication : MultiDexApplication(), Application.ActivityLifecycleCall
     override fun onActivityDestroyed(activity: Activity) {
         getActivityManager().removeActivity(activity)
     }
-
-
 }

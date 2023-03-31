@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "303252428837",
+    "project_id": "earth-proxy---stable-unlimited",
+    "storage_bucket": "earth-proxy---stable-unlimited.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:303252428837:android:fbcbb0b8b7bbcf73c647cc",
+        "android_client_info": {
+          "package_name": "com.unlimited.stable.earth"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "303252428837-7nce4vf4mldu53pg2v9765i0k82hb2kn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBYOUxb-SKu87noNzwA9KQJ2XKk__eTTEU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "303252428837-7nce4vf4mldu53pg2v9765i0k82hb2kn.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

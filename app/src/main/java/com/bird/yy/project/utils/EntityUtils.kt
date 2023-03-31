@@ -4,6 +4,9 @@ import android.content.Context
 import com.bird.yy.project.entity.Country
 import com.bird.yy.project.entity.CountryBean
 import com.github.shadowsocks.database.Profile
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.remoteconfig.ktx.remoteConfig
+import com.google.gson.Gson
 import com.unlimited.stable.earth.R
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -79,7 +82,7 @@ class EntityUtils {
             country.src = R.mipmap.unitedarabemirates
         } else if (countryBean.country.contains("ingdom")) {
             country.src = R.mipmap.unitedkingdom
-        } else if (countryBean.country.contains("ustralia")) {
+        } else if (countryBean.country.contains("ustrilia")) {
             country.src = R.mipmap.australia
         } else if (countryBean.country.contains("elgium")) {
             country.src = R.mipmap.belgium
@@ -97,6 +100,41 @@ class EntityUtils {
             country.src = R.mipmap.fast
         }
         return country
+    }
+    fun getServiceData(context: Context){
+
+        try {
+            val remoteConfig = Firebase.remoteConfig
+            remoteConfig.fetchAndActivate().addOnCompleteListener {
+                if (it.isSuccessful) {
+                    val serviceVpnData = remoteConfig.getString("earth_servlist")
+                    if (serviceVpnData.isNotEmpty()){
+                        SPUtils.get().putString(Constant.service,serviceVpnData)
+                    }else{
+                        val serviceJson = EntityUtils().obtainNativeJsonData(context, "service.json")
+                        SPUtils.get().putString(Constant.service, serviceJson.toString())
+                    }
+
+                    val smartServiceVpnData = remoteConfig.getString("earth_smart")
+                    if (smartServiceVpnData.isNotEmpty()){
+                        SPUtils.get().putString(Constant.smart, smartServiceVpnData)
+
+                    }else{
+                        val serviceJson = EntityUtils().obtainNativeJsonData(context, "city.json")
+                        SPUtils.get().putString(Constant.smart, serviceJson.toString())
+                    }
+                    val adData = remoteConfig.getString("earth_ad")
+                    if (adData.isNotEmpty()){
+                        SPUtils.get().putString(Constant.adResourceBean, adData)
+                    }else{
+                        val adResourceBeanJson = EntityUtils().obtainNativeJsonData(context, "ad.json").toString()
+                        SPUtils.get().putString(Constant.adResourceBean, adResourceBeanJson)
+                    }
+                }
+            }
+        }catch (e:Exception){
+            e.printStackTrace()
+        }
     }
 }
 

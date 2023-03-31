@@ -4,17 +4,18 @@ import com.google.gson.annotations.SerializedName
 
 
 data class CountryBean(
-    @SerializedName("serpa_ip")
+    @SerializedName("earth_ip")
     var ip: String = "51.161.131.222",
-    @SerializedName("serpa_port")
+    @SerializedName("earth_port")
     var port: Int = 4391,
-    @SerializedName("serpa_pwd")
+    @SerializedName("earth_pwd")
     var pwd: String = "t7I=X6YounKxhEaz",
-    @SerializedName("serpa_account")
+    @SerializedName("earth_account")
     var account: String = "chacha20-ietf-poly1305",
-    @SerializedName("serpa_country")
+    @SerializedName("earth_country")
     var country: String = "Austrilia",
-    @SerializedName("serpa_city")
+    @SerializedName("earth_city")
     var city: String = "Sydney"
+
 )
 

@@ -1,5 +1,8 @@
 package com.bird.yy.project.utils
 
+import com.bird.yy.project.entity.AdBean
+import com.google.android.gms.ads.nativead.NativeAd
+
 class Constant {
     companion object {
         const val isConnectStatus = "isConnectStatus"
@@ -14,7 +17,24 @@ class Constant {
         const val connectTime = "connectTime"
         const val isShowResultKey = "isShowResultKey"
         const val shareUrl = "https://play.google.com/store/apps/details?id="
+        const val adResourceBean ="adResourceBean"
+        const val adOpen = "serpac_o_open"
+        const val adInterstitial_r = "serpac_i_2R"
+        const val adInterstitial_h = "serpac_i_2H"
+        const val adNative_h = "serpac_n_home"
+        const val adNative_r = "serpac_n_result"
+        const val openAdType ="open"
+        const val nativeAdType = "native"
+        const val interAdType = "inter"
+        const val adTimeBean = "adTimeBean"
+
+
+        var AdMap: MutableMap<String, AdBean> = mutableMapOf()
+        var AdMapStatus: MutableMap<String, Boolean> = mutableMapOf()
+
         var isShowLead  = true
         var text = "00:00:00"
+        var loadingStartTime: Long = 0
+
     }
 }

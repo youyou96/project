@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
@@ -118,12 +119,15 @@ public class MyView extends HorizontalScrollView {
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
         int action = ev.getAction();
+
         switch (action) {
             case MotionEvent.ACTION_UP:
                 // 当手指拖动后松开判断此时屏幕左边界位置所在的x坐标值  来 决定显示还是隐藏
                 int scrollx = getScrollX();     // getScrollX()就是此时屏幕左边界所在的视图的x坐标值，即getScrollX() == x
-
                 // 左边界位置的x值大于菜单宽度的一半，即未显示的菜单宽度大于显示的菜单宽度，此时应该隐藏
+                if (scrollx==mMenuWidth){
+                    return super.onTouchEvent(ev);
+                }
                 if (scrollx >= mMenuWidth / 2) {
                     this.scrollTo(mMenuWidth, 0);
                     isOpen = false;
@@ -135,15 +139,11 @@ public class MyView extends HorizontalScrollView {
                     this.scrollTo(0, 0);
                     isOpen = true;
                 }
+
                 return true;
             default:
                 break;
         }
-//        if (isOpen) {
-//            mContent.setBackgroundResource(R.color.white);
-//        }else {
-//            mContent.setBackgroundResource(R.color.main_background);
-//        }
         return super.onTouchEvent(ev);
     }
 

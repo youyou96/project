@@ -13,6 +13,7 @@ import com.bird.yy.project.adapter.LocationAdapter
 import com.bird.yy.project.base.BaseActivity
 import com.bird.yy.project.entity.Country
 import com.bird.yy.project.entity.CountryBean
+import com.bird.yy.project.manager.AdManage
 import com.bird.yy.project.utils.Constant
 import com.bird.yy.project.utils.EntityUtils
 import com.bird.yy.project.utils.SPUtils
@@ -39,7 +40,7 @@ class ServiceActivity : BaseActivity() {
         isConnection = intent.getBooleanExtra("isConnection", false)
         arrBack = findViewById(R.id.id_back)
         arrBack?.setOnClickListener {
-            finish()
+            loadInterAd()
         }
         setList()
         locationAdapter?.setOnItemClickListener(object : LocationAdapter.OnItemClickListener {
@@ -98,7 +99,7 @@ class ServiceActivity : BaseActivity() {
     private fun setList() {
         val countryJson: String? = SPUtils.get().getString(Constant.service, "")
         val countryList: MutableList<Country> = ArrayList()
-        countryList.add(Country(0, "Super Smart Server"))
+        countryList.add(Country(0, "Super Fast Server"))
         if (countryJson != null) {
             if (countryJson.isNotEmpty()) {
                 val type: Type = object : TypeToken<List<CountryBean?>?>() {}.type
@@ -127,5 +128,36 @@ class ServiceActivity : BaseActivity() {
 
         locationAdapter?.setList(countryList)
         locationAdapter?.notifyDataSetChanged()
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        loadInterAd()
+    }
+    private var adManage = AdManage()
+    private fun loadInterAd() {
+        val adBean = Constant.AdMap[Constant.adInterstitial_r]
+        if (adBean?.ad == null) {
+            adManage.loadAd(
+                Constant.adInterstitial_r,
+                this
+            )
+            finish()
+        } else {
+            adManage.showAd(
+                this@ServiceActivity,
+                Constant.adInterstitial_r,
+                adBean,
+                null,
+                object : AdManage.OnShowAdCompleteListener {
+                    override fun onShowAdComplete() {
+                        finish()
+                    }
+
+                    override fun isMax() {
+                        finish()
+                    }
+                })
+        }
     }
 }

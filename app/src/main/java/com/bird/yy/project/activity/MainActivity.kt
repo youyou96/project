@@ -18,9 +18,11 @@ import androidx.preference.PreferenceDataStore
 import com.bird.yy.project.R
 import com.bird.yy.project.base.BaseActivity
 import com.bird.yy.project.databinding.ActivityMainBinding
+import com.bird.yy.project.entity.AdBean
 import com.bird.yy.project.entity.Country
 import com.bird.yy.project.entity.CountryBean
 import com.bird.yy.project.entity.SmartBean
+import com.bird.yy.project.manager.AdManage
 import com.bird.yy.project.utils.*
 import com.bird.yy.project.viewmodel.MainViewModel
 import com.github.shadowsocks.Core
@@ -50,6 +52,7 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
     private lateinit var binding: ActivityMainBinding
     private lateinit var mainViewModel: MainViewModel
     private var state = BaseService.State.Idle
+    private var adManage = AdManage()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
@@ -58,6 +61,7 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
         onCLickListener()
         connection.connect(this, this)
         EventBus.getDefault().register(this)
+        loadNativeAd()
     }
 
 
@@ -72,7 +76,9 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
             startActivity(intent)
         }
         binding.mainSrcBackground.setOnClickListener {
-            connect()
+            if (!ButtonUtils.isFastDoubleClick(R.id.main_src_background)) {
+                connect()
+            }
         }
         binding.contactUsLl.setOnClickListener {
             if (binding.drawerLayout.isOpen) {
@@ -102,10 +108,14 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
     }
 
     private fun rateNow() {
-        val intent = Intent(Intent.ACTION_VIEW)
-        intent.data = Uri.parse("https://play.google.com/store/apps/details?id=$packageName")
-        intent.setPackage("com.android.vending")
-        startActivity(intent)
+        try {
+            val intent = Intent(Intent.ACTION_VIEW)
+            intent.data = Uri.parse("https://play.google.com/store/apps/details?id=$packageName")
+            intent.setPackage("com.android.vending")
+            startActivity(intent)
+        } catch (e: Exception) {
+            Toast.makeText(this, "Please install Google Store", Toast.LENGTH_LONG).show()
+        }
     }
 
 
@@ -152,7 +162,9 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
                 customizedDialog.dismiss()
                 binding.mainSrcBackground.visibility = View.VISIBLE
                 if (!state.canStop) {
-                    connect()
+                    if (!ButtonUtils.isFastDoubleClick(R.id.animation_view)) {
+                        connect()
+                    }
                 }
 
             }
@@ -228,18 +240,16 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
             .show() else showConnect()
     }
 
-        private var countryBean: CountryBean? = null
+    private var countryBean: CountryBean? = null
     private fun connectAnnotation() {
         ProfileManager.clear()
 //        var countryBean: CountryBean? = null
         val countryBeanJson = if (state.canStop) SPUtils.get()
             .getString(Constant.connectedCountryBean, "") else SPUtils.get()
             .getString(Constant.connectingCountryBean, "")
-        Log.d("xxxxxx", countryBeanJson.toString() + state.canStop)
         if (countryBeanJson != null) {
             if (countryBeanJson.isNotEmpty()) {
                 countryBean = Gson().fromJson(countryBeanJson, CountryBean::class.java)
-                Log.d("xxxxxx11111", countryBean.toString())
             }
         }
         if (countryBean == null || countryBean?.country?.contains("Super Fast") == true) {
@@ -260,7 +270,6 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
                     Core.switchProfile(profileNew.id)
                     SPUtils.get()
                         .putString(Constant.connectingCountryBean, Gson().toJson(countryBean))
-                    Log.d("xxxxxx33333", countryBean.toString())
                 }
             }
         } else {
@@ -269,7 +278,6 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
             val profileNew = profile?.let { ProfileManager.createProfile(it) }
             profileNew?.id?.let { Core.switchProfile(it) }
             SPUtils.get().putString(Constant.connectingCountryBean, Gson().toJson(countryBean))
-            Log.d("xxxxxx2222", countryBean.toString())
         }
     }
 
@@ -351,7 +359,6 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
                 if (countryBean != null) {
                     SPUtils.get()
                         .putString(Constant.connectedCountryBean, Gson().toJson(countryBean))
-                    Log.d("xxxxxx", "00000" + countryBean.toString())
                     SPUtils.get().putString(
                         Constant.chooseCountry,
                         Gson().toJson(EntityUtils().countryBeanToCountry(countryBean!!))
@@ -423,6 +430,22 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
                             startActivity(intent)
                             SPUtils.get().putBoolean(Constant.isShowResultKey, false)
                             refreshUi()
+                            val countryBeanJson =
+                                SPUtils.get().getString(Constant.connectingCountryBean, "")
+                            if (countryBeanJson != null && countryBeanJson.isNotEmpty()) {
+                                val countryBeanConnecting =
+                                    Gson().fromJson(countryBeanJson, CountryBean::class.java)
+                                if (countryBeanConnecting != null) {
+                                    SPUtils.get().putString(
+                                        Constant.chooseCountry,
+                                        Gson().toJson(
+                                            EntityUtils().countryBeanToCountry(
+                                                countryBeanConnecting
+                                            )
+                                        )
+                                    )
+                                }
+                            }
                         }
                     }
 
@@ -443,31 +466,32 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
     }
 
     private var connectionJob: Job? = null
+    private var time: Int = 0
+    private var interAdIsShow = false
     private fun showConnect() {
+        time = 0
         if (state.canStop) {
             Constant.text = binding.theConnectionTimeTv.text as String
         }
         SPUtils.get().putBoolean(Constant.isShowResultKey, true)
         val isCancel = state.canStop
-        var isFinish = false
         val customizedDialog =
             CustomizedDialog(this@MainActivity, "images/data.json", isCancel, isCancel)
         connectionJob = lifecycleScope.launch {
             flow {
-                (0 until 3).forEach {
+                (0 until 10).forEach {
                     delay(1000)
+                    time += 1
                     emit(it)
                 }
             }.onStart {
                 //start
-                Log.d("xxxxxx", "1111")
                 customizedDialog.show()
                 connectAnnotation()
             }.onCompletion {
                 //finish
-                Log.d("xxxxxx", "0000")
-                customizedDialog.dismiss()
-                if (!isFinish) {
+                if (customizedDialog.isShowing && !interAdIsShow) {
+                    customizedDialog.dismiss()
                     if (state.canStop) {
                         Core.stopService()
                     } else {
@@ -476,13 +500,13 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
                 }
             }.collect {
                 //process
-                Log.d("xxxxxx", "3333")
+                if (time == 1) {
+                    loadInterAd(customizedDialog)
+                }
                 if (!customizedDialog.isShowing) {
-                    isFinish = true
                     connectionJob?.cancel()
                     return@collect
                 }
-
             }
         }
 
@@ -499,5 +523,151 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
         SPUtils.get().putBoolean(Constant.isShowResultKey, false)
         EventBus.getDefault().unregister(this)
         countryBean = null
+    }
+
+    private fun loadNativeAd() {
+        val adBean = Constant.AdMap[Constant.adNative_h]
+        if (adBean?.ad == null) {
+            adManage.loadAd(Constant.adNative_h, this, object : AdManage.OnLoadAdCompleteListener {
+                override fun onLoadAdComplete(ad: AdBean?) {
+                    if (ad?.ad != null) {
+                        adManage.showAd(
+                            this@MainActivity,
+                            Constant.adNative_h,
+                            ad,
+                            binding.adFrameLayout,
+                            object : AdManage.OnShowAdCompleteListener {
+                                override fun onShowAdComplete() {
+                                }
+
+                                override fun isMax() {
+                                }
+
+                            })
+                    }
+                }
+
+                override fun isMax() {
+
+                }
+            })
+        } else {
+            adManage.showAd(
+                this@MainActivity,
+                Constant.adNative_h,
+                adBean,
+                binding.adFrameLayout,
+                object : AdManage.OnShowAdCompleteListener {
+                    override fun onShowAdComplete() {
+                    }
+
+                    override fun isMax() {
+
+                    }
+
+                })
+        }
+    }
+
+    private fun loadInterAd(customizedDialog: CustomizedDialog) {
+        interAdIsShow = false
+        val adBean = Constant.AdMap[Constant.adInterstitial_h]
+        if (adBean?.ad == null) {
+            adManage.loadAd(
+                Constant.adInterstitial_h,
+                this,
+                object : AdManage.OnLoadAdCompleteListener {
+                    override fun onLoadAdComplete(ad: AdBean?) {
+                        if (ad?.ad != null && customizedDialog.isShowing) {
+                            interAdIsShow = true
+                            adManage.showAd(
+                                this@MainActivity,
+                                Constant.adInterstitial_h,
+                                ad,
+                                null,
+                                object : AdManage.OnShowAdCompleteListener {
+                                    override fun onShowAdComplete() {
+                                        AdManage().loadAd(
+                                            Constant.adInterstitial_h,
+                                            this@MainActivity
+                                        )
+                                        if (customizedDialog.isShowing) {
+                                            customizedDialog.dismiss()
+                                            if (state.canStop) {
+                                                Core.stopService()
+                                            } else {
+                                                Core.startService()
+                                            }
+                                        }
+                                    }
+
+                                    override fun isMax() {
+                                        if (customizedDialog.isShowing) {
+                                            customizedDialog.dismiss()
+                                            if (state.canStop) {
+                                                Core.stopService()
+                                            } else {
+                                                Core.startService()
+                                            }
+                                        }
+                                    }
+
+                                })
+                        }
+                    }
+
+                    override fun isMax() {
+                        if (customizedDialog.isShowing) {
+                            customizedDialog.dismiss()
+                            if (state.canStop) {
+                                Core.stopService()
+                            } else {
+                                Core.startService()
+                            }
+                        }
+                    }
+
+                })
+        } else {
+            if (customizedDialog.isShowing) {
+                interAdIsShow = true
+                adManage.showAd(
+                    this@MainActivity,
+                    Constant.adInterstitial_h,
+                    adBean,
+                    null,
+                    object : AdManage.OnShowAdCompleteListener {
+                        override fun onShowAdComplete() {
+                            AdManage().loadAd(Constant.adInterstitial_h, this@MainActivity)
+                            if (customizedDialog.isShowing) {
+                                customizedDialog.dismiss()
+                                if (state.canStop) {
+                                    Core.stopService()
+                                } else {
+                                    Core.startService()
+                                }
+                            }
+                        }
+
+                        override fun isMax() {
+                            if (customizedDialog.isShowing) {
+                                customizedDialog.dismiss()
+                                if (state.canStop) {
+                                    Core.stopService()
+                                } else {
+                                    Core.startService()
+                                }
+                            }
+                        }
+
+                    })
+            }
+
+        }
+
+        val adBeanNativeR = Constant.AdMap[Constant.adNative_r]
+        if (adBeanNativeR?.ad == null) {
+            AdManage().loadAd(Constant.adNative_r, this)
+        }
     }
 }

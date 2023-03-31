@@ -1,6 +1,6 @@
 {
-  "serpac_sm":50,
-  "serpac_cm":3,
+  "serpac_sm": 30,
+  "serpac_cm": 2,
   "serpac_o_open": [
     {
       "serpac_id": "ca-app-pub-3940256099942544/3419835294mm",
@@ -12,13 +12,13 @@
       "serpac_id": "ca-app-pub-3940256099942544/3419835294m",
       "serpac_source": "admob",
       "serpac_type": "open",
-      "serpac_pri": 1
+      "serpac_pri": 3
     },
     {
       "serpac_id": "ca-app-pub-3940256099942544/3419835294",
       "serpac_source": "admob",
       "serpac_type": "open",
-      "serpac_pri": 3
+      "serpac_pri": 1
     }
   ],
   "serpac_n_home": [
@@ -72,13 +72,13 @@
       "serpac_id": "ca-app-pub-3940256099942544/1033173712",
       "serpac_source": "admob",
       "serpac_type": "inter",
-      "serpac_pri": 2
+      "serpac_pri": 1
     },
     {
       "serpac_id": "ca-app-pub-3940256099942544/1033173712n",
       "serpac_source": "admob",
       "serpac_type": "inter",
-      "serpac_pri": 1
+      "serpac_pri": 2
     }
   ],
   "serpac_i_2H": [

@@ -7,6 +7,7 @@ import android.view.Window
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
+import androidx.lifecycle.Lifecycle
 
 
 open class BaseActivity : AppCompatActivity() {
@@ -21,8 +22,10 @@ open class BaseActivity : AppCompatActivity() {
     }
 
     protected open fun jumpActivityFinish(clazz: Class<*>?) {
-        startActivity(Intent(this, clazz))
-        finish()
+        if (lifecycle.currentState == Lifecycle.State.RESUMED || lifecycle.currentState == Lifecycle.State.STARTED) {
+            startActivity(Intent(this, clazz))
+            finish()
+        }
     }
 
     protected open fun jumpActivity(clazz: Class<*>?) {

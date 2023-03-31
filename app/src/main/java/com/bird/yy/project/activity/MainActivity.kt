@@ -468,6 +468,8 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
     private var connectionJob: Job? = null
     private var time: Int = 0
     private var interAdIsShow = false
+
+    private var customizedDialog: CustomizedDialog? = null
     private fun showConnect() {
         time = 0
         if (state.canStop) {
@@ -475,7 +477,7 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
         }
         SPUtils.get().putBoolean(Constant.isShowResultKey, true)
         val isCancel = state.canStop
-        val customizedDialog =
+        customizedDialog =
             CustomizedDialog(this@MainActivity, "images/data.json", isCancel, isCancel)
         connectionJob = lifecycleScope.launch {
             flow {
@@ -486,12 +488,12 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
                 }
             }.onStart {
                 //start
-                customizedDialog.show()
+                customizedDialog?.show()
                 connectAnnotation()
             }.onCompletion {
                 //finish
-                if (customizedDialog.isShowing && !interAdIsShow) {
-                    customizedDialog.dismiss()
+                if (customizedDialog?.isShowing == true && !interAdIsShow) {
+                    customizedDialog?.dismiss()
                     if (state.canStop) {
                         Core.stopService()
                     } else {
@@ -501,9 +503,9 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
             }.collect {
                 //process
                 if (time == 1) {
-                    loadInterAd(customizedDialog)
+                    loadInterAd(customizedDialog!!)
                 }
-                if (!customizedDialog.isShowing) {
+                if (customizedDialog?.isShowing == false) {
                     connectionJob?.cancel()
                     return@collect
                 }
@@ -593,22 +595,22 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
                                         )
                                         if (customizedDialog.isShowing) {
                                             customizedDialog.dismiss()
-                                            if (state.canStop) {
-                                                Core.stopService()
-                                            } else {
-                                                Core.startService()
-                                            }
+                                        }
+                                        if (state.canStop) {
+                                            Core.stopService()
+                                        } else {
+                                            Core.startService()
                                         }
                                     }
 
                                     override fun isMax() {
                                         if (customizedDialog.isShowing) {
                                             customizedDialog.dismiss()
-                                            if (state.canStop) {
-                                                Core.stopService()
-                                            } else {
-                                                Core.startService()
-                                            }
+                                        }
+                                        if (state.canStop) {
+                                            Core.stopService()
+                                        } else {
+                                            Core.startService()
                                         }
                                     }
 
@@ -619,11 +621,11 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
                     override fun isMax() {
                         if (customizedDialog.isShowing) {
                             customizedDialog.dismiss()
-                            if (state.canStop) {
-                                Core.stopService()
-                            } else {
-                                Core.startService()
-                            }
+                        }
+                        if (state.canStop) {
+                            Core.stopService()
+                        } else {
+                            Core.startService()
                         }
                     }
 
@@ -641,22 +643,22 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
                             AdManage().loadAd(Constant.adInterstitial_h, this@MainActivity)
                             if (customizedDialog.isShowing) {
                                 customizedDialog.dismiss()
-                                if (state.canStop) {
-                                    Core.stopService()
-                                } else {
-                                    Core.startService()
-                                }
+                            }
+                            if (state.canStop) {
+                                Core.stopService()
+                            } else {
+                                Core.startService()
                             }
                         }
 
                         override fun isMax() {
                             if (customizedDialog.isShowing) {
                                 customizedDialog.dismiss()
-                                if (state.canStop) {
-                                    Core.stopService()
-                                } else {
-                                    Core.startService()
-                                }
+                            }
+                            if (state.canStop) {
+                                Core.stopService()
+                            } else {
+                                Core.startService()
                             }
                         }
 
@@ -668,6 +670,13 @@ class MainActivity : BaseActivity(), ShadowsocksConnection.Callback,
         val adBeanNativeR = Constant.AdMap[Constant.adNative_r]
         if (adBeanNativeR?.ad == null) {
             AdManage().loadAd(Constant.adNative_r, this)
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (customizedDialog?.isShowing == true && state.canStop) {
+            customizedDialog?.dismiss()
         }
     }
 }

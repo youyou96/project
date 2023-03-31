@@ -38,7 +38,7 @@ public class CustomProgressBar extends View {
 
         // 绘制进度条的背景矩形
         @SuppressLint("DrawAllocation") Paint backgroundPaint = new Paint();
-        backgroundPaint.setColor(Color.parseColor("#dddddd"));
+        backgroundPaint.setColor(Color.parseColor("#5A5858"));
         canvas.drawRect(0, 0, width, height, backgroundPaint);
 
         // 绘制进度条的前景矩形

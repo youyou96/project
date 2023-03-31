@@ -20,6 +20,7 @@ import com.bird.yy.project.utils.Constant
 import com.bird.yy.project.utils.SPUtils
 import com.github.shadowsocks.Core
 import com.google.android.gms.ads.AdActivity
+import com.google.android.gms.ads.MobileAds
 import com.lzy.okgo.OkGo
 import com.lzy.okgo.cache.CacheEntity
 import com.lzy.okgo.cache.CacheMode
@@ -48,6 +49,7 @@ class BaseApplication : MultiDexApplication(), Application.ActivityLifecycleCall
         Core.init(this, MainActivity::class)
         Constant.isShowLead = true
         if (applicationContext.packageName.equals(getCurrentProcessName())) {
+            MobileAds.initialize(this)
             initOkGo()
             registerActivityLifecycleCallbacks(this)
             SPUtils.get().init(this)
